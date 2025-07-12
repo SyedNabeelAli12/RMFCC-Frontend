@@ -16,7 +16,7 @@ export const AuthContextProvider = ({ children }) => {
 
       const token = localStorage.getItem("token");
       if (!token) {
-        if (location.pathname !== "signin" && location.pathname !== "signup") {
+        if (location.pathname !== "/signin" && location.pathname !== "/signup") {
           navigate("/signin");
         }
         return;
