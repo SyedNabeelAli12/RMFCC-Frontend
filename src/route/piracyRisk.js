@@ -13,6 +13,12 @@ import PiracyRiskForm from "../compnents/piracyRiskForm";
 import PredictionResult from "../compnents/predictionResult";
 import KeyIndicators from "../compnents/keyIndicators";
 import config from "../config";
+import { Collapse, Button } from "@mui/material";
+import CustomAccordion from "../compnents/accordion";
+import CountryForecastPanel from "./ForecastPredictionPanel";
+import ForecastChart from "./../compnents/forecastChart";
+import axios from "axios";
+import DataProcessingExplanation from './../compnents/calculationDetails';
 
 const theme = createTheme({
   palette: {
@@ -38,7 +44,10 @@ const theme = createTheme({
 
 export default function PiracyRisk() {
   const [topCountries, setTopCountries] = useState([]);
+  const [topCountriesError, setTopCountriesError] = useState(null);
+  const [countries, setCountries] = useState([]);
   const [loadingTop, setLoadingTop] = useState(true);
+  const [showForecast, setShowForecast] = useState(false);
 
   const [form, setForm] = useState({
     GR: "",
@@ -51,20 +60,34 @@ export default function PiracyRisk() {
   const [loadingPred, setLoadingPred] = useState(false);
   const [error, setError] = useState(null);
 
-
   useEffect(() => {
     async function fetchTop() {
       try {
         const res = await fetch(`${config.topCountries}`);
+        if (!res.ok) throw new Error("Failed to fetch top countries");
         const data = await res.json();
         setTopCountries(data.top_countries || []);
+        setTopCountriesError(null);
       } catch (err) {
         console.error(err);
+        setTopCountriesError(err.message || "Error loading top countries");
       } finally {
         setLoadingTop(false);
       }
     }
     fetchTop();
+  }, []);
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const res = await axios.get(`${config.distinctCountries}`);
+        setCountries(res.data.countries || []);
+      } catch (err) {
+        console.error("Failed to load countries", err);
+      }
+    };
+    fetchCountries();
   }, []);
 
   const handleChange = (e) => {
@@ -77,9 +100,18 @@ export default function PiracyRisk() {
     setPrediction(null);
     setError(null);
 
-    const fields = Object.values(form);
-    if (fields.some((v) => v === "" || parseFloat(v) === 0)) {
-      setError("Please fill in all fields (no zero allowed).");
+    const { GR, MILITARY, CORRUPTIONINDEX, FISHPRODUCTION } = form;
+    if (
+      GR === "" ||
+      MILITARY === "" ||
+      FISHPRODUCTION === "" ||
+      parseFloat(GR) === 0 ||
+      parseFloat(MILITARY) === 0 ||
+      parseFloat(FISHPRODUCTION) === 0
+    ) {
+      setError(
+        "Please fill in all fields (no zero allowed, except Corruption Index)."
+      );
       setLoadingPred(false);
       return;
     }
@@ -111,8 +143,26 @@ export default function PiracyRisk() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="90%" sx={{ mt: 6, mb: 6 }}>
-        <TopCountries loadingTop={loadingTop} topCountries={topCountries} />
 
+
+        {/* Error message in red if loading top countries fails */}
+       
+
+        <TopCountries loadingTop={loadingTop} topCountries={topCountries} error= {topCountriesError}/>
+
+        <CustomAccordion title="Show Forecast Panel">
+          <CountryForecastPanel countries={countries} />
+        </CustomAccordion>
+
+        <CustomAccordion title="Show Forecast Visualization">
+          <ForecastChart countries={countries} />
+        </CustomAccordion>
+        <CustomAccordion title="Data Processing Explanation">
+           <DataProcessingExplanation/>
+        </CustomAccordion>
+
+
+      
         <Card elevation={5} sx={{ p: 4, borderRadius: 0.5 }}>
           <PiracyRiskForm
             form={form}
@@ -121,10 +171,11 @@ export default function PiracyRisk() {
             loadingPred={loadingPred}
             error={error}
           />
-
           {prediction && <KeyIndicators form={form} />}
           {prediction && <PredictionResult prediction={prediction} />}
         </Card>
+
+           
       </Container>
     </ThemeProvider>
   );

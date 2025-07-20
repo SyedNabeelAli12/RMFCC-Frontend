@@ -12,6 +12,7 @@ import AuthContext, {
 import PiracyRisk from "./route/piracyRisk";
 import SignIn from "./route/signIn";
 import SignUp from "./route/signUp";
+import ForecastPredictionPanel from './route/ForecastPredictionPanel';
 
 function AppRoutes() {
   const { user, logout } = useContext(AuthContext);
@@ -39,6 +40,7 @@ function AppRoutes() {
                   logout = {logout}
                 />
                 <PiracyRisk />
+          {/* <ForecastPredictionPanel country={'NRU'}/> */}
                 {/* Add other protected routes here */}
               </>
             }

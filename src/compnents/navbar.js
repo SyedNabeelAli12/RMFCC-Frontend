@@ -1,14 +1,6 @@
 "use client";
 import { CalendarIcon, PlusIcon, LogOutIcon } from "lucide-react";
-import {
-  Box,
-  Button,
-  IconButton,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Paper,
-} from "@mui/material";
+import { Box, Button, IconButton, TextField, Paper } from "@mui/material";
 import { useState } from "react";
 
 export default function NavBar({ onNewPredictionClick, logout }) {
@@ -19,15 +11,23 @@ export default function NavBar({ onNewPredictionClick, logout }) {
       elevation={1}
       sx={{
         p: 2,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
         borderRadius: 2,
+        display: "flex",
+        flexDirection: { xs: "column", sm: "row" },
+        justifyContent: "space-between",
+        alignItems: { xs: "stretch", sm: "center" },
+        gap: 2,
       }}
     >
-      {/* Left side: Date Picker + View Buttons */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        {/* Date Picker */}
+      {/* Left side: Date Picker */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          flexWrap: "wrap",
+        }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -37,6 +37,7 @@ export default function NavBar({ onNewPredictionClick, logout }) {
             px: 1.5,
             py: 0.5,
             bgcolor: "white",
+            width: { xs: "100%", sm: "auto" },
           }}
         >
           <CalendarIcon
@@ -53,14 +54,20 @@ export default function NavBar({ onNewPredictionClick, logout }) {
               disableUnderline: true,
               style: { fontSize: 14, cursor: "default" },
             }}
+            fullWidth
           />
         </Box>
-
-        {/* View Buttons */}
       </Box>
 
-      {/* Right side: New Appointment Button */}
-      <Box sx={{ display: "flex", gap: 2 }}>
+      {/* Right side: Action Buttons */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 1.5,
+          alignItems: "stretch",
+        }}
+      >
         <Button
           variant="contained"
           onClick={onNewPredictionClick}
@@ -71,14 +78,16 @@ export default function NavBar({ onNewPredictionClick, logout }) {
             px: 3,
             py: 1,
             fontSize: 14,
-            "&:hover": {
-              bgcolor: "#1f1f1f",
-            },
+            height: "7vh",
+            whiteSpace: "nowrap", // Keep text in one line
+            "&:hover": { bgcolor: "#1f1f1f" },
+            width: { xs: "100%", sm: "auto" }, // Full width on mobile, auto on larger screens
           }}
           startIcon={<PlusIcon size={16} />}
         >
           New Prediction
         </Button>
+
         <Button
           variant="contained"
           onClick={logout}
@@ -89,9 +98,10 @@ export default function NavBar({ onNewPredictionClick, logout }) {
             px: 3,
             py: 1,
             fontSize: 14,
-            "&:hover": {
-              bgcolor: "#1f1f1f",
-            },
+            height: "7vh",
+            whiteSpace: "nowrap", // Keep text in one line
+            "&:hover": { bgcolor: "#1f1f1f" },
+            width: { xs: "100%", sm: "auto" }, // Full width on mobile, auto on larger screens
           }}
           startIcon={<LogOutIcon size={16} />}
         >

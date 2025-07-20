@@ -32,7 +32,7 @@ export default function PiracyRiskForm({
       <Grid container spacing={2}>
         {[
           { name: "GR", label: "Growth Rate (GR)" },
-          { name: "MILITARY", label: "Military Spending" },
+          { name: "MILITARY", label: "Military" },
           { name: "CORRUPTIONINDEX", label: "Corruption Index" },
           { name: "FISHPRODUCTION", label: "Fish Production" },
         ].map(({ name, label }) => (

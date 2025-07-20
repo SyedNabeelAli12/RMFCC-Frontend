@@ -11,7 +11,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import config from "../config";
 
-
 export default function SignUp() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -60,92 +59,103 @@ export default function SignUp() {
   };
 
   return (
-    <Paper
-      elevation={4}
+    <Box
       sx={{
-        p: 4,
-        maxWidth: 400,
-        mx: "auto",
-        mt: 8,
-        borderRadius: 2,
-        bgcolor: "background.paper",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        px: 2, // horizontal padding on small screens
+        bgcolor: "#f5f5f5",
       }}
     >
-      <Typography variant="h5" mb={3} fontWeight="bold" align="center">
-        Sign Up
-      </Typography>
+      <Paper
+        elevation={4}
+        sx={{
+          p: 4,
+          width: "100%",
+          maxWidth: { xs: "100%", sm: 400 },
+          borderRadius: 2,
+          bgcolor: "background.paper",
+        }}
+      >
+        <Typography variant="h5" mb={3} fontWeight="bold" align="center">
+          Sign Up
+        </Typography>
 
-      <Box component="form" onSubmit={handleSubmit} noValidate>
-        <TextField
-          label="Email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          type="email"
-          fullWidth
-          required
-          margin="normal"
-        />
-        <TextField
-          label="Password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          type="password"
-          fullWidth
-          required
-          margin="normal"
-        />
-        <TextField
-          label="Confirm Password"
-          name="confirmPassword"
-          value={form.confirmPassword}
-          onChange={handleChange}
-          type="password"
-          fullWidth
-          required
-          margin="normal"
-        />
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <TextField
+            label="Email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            type="email"
+            fullWidth
+            required
+            margin="normal"
+          />
+          <TextField
+            label="Password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            type="password"
+            fullWidth
+            required
+            margin="normal"
+          />
+          <TextField
+            label="Confirm Password"
+            name="confirmPassword"
+            value={form.confirmPassword}
+            onChange={handleChange}
+            type="password"
+            fullWidth
+            required
+            margin="normal"
+          />
 
-        {error && (
-          <Typography
-            variant="body2"
-            color="error"
-            sx={{ mt: 1, mb: -1, textAlign: "left" }}
+          {error && (
+            <Typography
+              variant="body2"
+              color="error"
+              sx={{ mt: 1, mb: -1, textAlign: "left" }}
+            >
+              {error}
+            </Typography>
+          )}
+
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            disabled={loading}
+            sx={{
+              mt: 3,
+              bgcolor: "black",
+              "&:hover": { bgcolor: "#1f1f1f" },
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: 14,
+              py: 1.25,
+            }}
           >
-            {error}
-          </Typography>
-        )}
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
+          </Button>
+        </Box>
 
-        <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          disabled={loading}
-          sx={{
-            mt: 3,
-            bgcolor: "black",
-            "&:hover": { bgcolor: "#1f1f1f" },
-            textTransform: "none",
-            fontWeight: 600,
-            fontSize: 14,
-          }}
-        >
-          {loading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
-        </Button>
-      </Box>
-
-      <Typography variant="body2" align="center" mt={2}>
-        Already have an account?{" "}
-        <Link
-          component="button"
-          variant="body2"
-          onClick={() => navigate("/signin")}
-          sx={{ fontWeight: 600 }}
-        >
-          Sign In
-        </Link>
-      </Typography>
-    </Paper>
+        <Typography variant="body2" align="center" mt={2}>
+          Already have an account?{" "}
+          <Link
+            component="button"
+            variant="body2"
+            onClick={() => navigate("/signin")}
+            sx={{ fontWeight: 600 }}
+          >
+            Sign In
+          </Link>
+        </Typography>
+      </Paper>
+    </Box>
   );
 }

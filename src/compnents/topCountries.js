@@ -19,7 +19,9 @@ import {
   Cell,
   Legend,
 } from "recharts";
+
 import Header from "./headers";
+import CountryCard from './countryCard';
 
 const palette = [
   "#FE4A49",
@@ -36,45 +38,48 @@ const getRandomColor = () => {
   return palette[index];
 };
 
-export default function TopCountries({ loadingTop, topCountries }) {
+export default function TopCountries({ loadingTop, topCountries, error }) {
   const theme = useTheme();
 
   const colorMap = useMemo(() => {
     const map = {};
     topCountries.forEach(({ COUNTRY }, index) => {
-      if (index === 0) {
-        map[COUNTRY] = "#FFD700";
-      } else if (index === 1) {
-        map[COUNTRY] = "#C0C0C0"; 
-      } else if (index === 2) {
-        map[COUNTRY] = "#CD7F32";
-      } else {
-        map[COUNTRY] = getRandomColor();
-      }
+      if (index === 0) map[COUNTRY] = "#FFD700";
+      else if (index === 1) map[COUNTRY] = "#C0C0C0";
+      else if (index === 2) map[COUNTRY] = "#CD7F32";
+      else map[COUNTRY] = getRandomColor();
     });
     return map;
   }, [topCountries]);
 
-  const pieData = useMemo(() => {
-    return topCountries.map(({ COUNTRY, Final_Score }) => ({
-      name: COUNTRY,
-      value: Final_Score,
-    }));
-  }, [topCountries]);
+  const pieData = useMemo(
+    () =>
+      topCountries.map(({ COUNTRY, Final_Score }) => ({
+        name: COUNTRY,
+        value: Final_Score,
+      })),
+    [topCountries]
+  );
 
-  const highest = useMemo(() => {
-    return topCountries.reduce(
-      (max, curr) => (curr.Final_Score > max.Final_Score ? curr : max),
-      topCountries[0]
-    );
-  }, [topCountries]);
+  const highest = useMemo(
+    () =>
+      topCountries.reduce(
+        (max, curr) => (curr.Final_Score > max.Final_Score ? curr : max),
+        topCountries[0]
+      ),
+    [topCountries]
+  );
 
-  const lowest = useMemo(() => {
-    return topCountries.reduce(
-      (min, curr) => (curr.Final_Score < min.Final_Score ? curr : min),
-      topCountries[0]
-    );
-  }, [topCountries]);
+  const lowest = useMemo(
+    () =>
+      topCountries.reduce(
+        (min, curr) => (curr.Final_Score < min.Final_Score ? curr : min),
+        topCountries[0]
+      ),
+    [topCountries]
+  );
+
+  
 
   return (
     <Paper elevation={4} sx={{ mb: 6, p: 4, borderRadius: 0.5 }}>
@@ -83,10 +88,13 @@ export default function TopCountries({ loadingTop, topCountries }) {
         <Box display="flex" justifyContent="center" mt={2}>
           <CircularProgress />
         </Box>
+      ) : error ? (
+        <Typography sx={{ color: "red", mb: 2 }}>{error}</Typography>
       ) : topCountries.length === 0 ? (
-        <Typography>No data available.</Typography>
+        <Typography sx={{ color: "red", mb: 2 }}>No data available.</Typography>
       ) : (
         <>
+          {/* BAR CHART + CARDS */}
           <Box
             sx={{
               display: "flex",
@@ -139,52 +147,36 @@ export default function TopCountries({ loadingTop, topCountries }) {
                 gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
               }}
             >
-              {topCountries.map(({ COUNTRY, Final_Score }, i) => {
-                const stripeColor = colorMap[COUNTRY];
-                const rankEmoji =
-                  i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "";
 
-                return (
-                  <Card
-                    key={COUNTRY}
-                    elevation={3}
-                    sx={{
-                      p: 1,
-                      borderRadius: 0.5,
-                      height: "7vh",
-                      display: "flex",
-                      alignItems: "center",
-                      position: "relative",
-                      backgroundColor: "#f0f0f0",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        left: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: 6,
-                        backgroundColor: stripeColor,
-                        borderRadius: "1px 0 0 1px",
-                      }}
-                    />
-                    <Box sx={{ ml: 2 }}>
-                      <Typography variant="body1" fontWeight="medium">
-                        {i + 1}. {rankEmoji} {COUNTRY}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Final Score: {(Final_Score * 100).toFixed(2)}%
-                      </Typography>
-                    </Box>
-                  </Card>
-                );
-              })}
+{topCountries.map(({ COUNTRY, COUNTRYNAME, Final_Score }, i) => (
+  <CountryCard
+    key={COUNTRY}
+    country={COUNTRY}
+    countryName={COUNTRYNAME}
+    score={Final_Score}
+    rank={i}
+    color={colorMap[COUNTRY]}
+  />
+))}
+
+
+
             </Box>
           </Box>
 
-          {/* Pie Chart Section */}
-          <Box sx={{ height: "50vh", mt: 4 }}>
+          {/* PIE CHART */}
+          <Box
+            sx={{
+              height: "50vh",
+              minHeight: 320,
+              mt: 4,
+              px: 2,
+              boxSizing: "border-box",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
             <Header content={"Top Countries Pie Chart View"} />
 
             {/* Highest & Lowest Labels */}
@@ -194,49 +186,96 @@ export default function TopCountries({ loadingTop, topCountries }) {
                 justifyContent: "space-between",
                 mb: 2,
                 px: 1,
+                flexWrap: "wrap",
+                gap: 1,
               }}
             >
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" noWrap>
                 <strong>Highest:</strong> {highest?.COUNTRY} (
-                {(highest?.Final_Score * 100).toFixed(2)}%)
+                {highest?.Final_Score.toFixed(3)})
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" noWrap>
                 <strong>Lowest:</strong> {lowest?.COUNTRY} (
-                {(lowest?.Final_Score * 100).toFixed(2)}%)
+                {lowest?.Final_Score.toFixed(3)})
               </Typography>
             </Box>
 
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
-                  fill="#000"
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  {pieData.map((entry) => (
-                    <Cell
-                      key={`slice-${entry.name}`}
-                      fill={colorMap[entry.name] || "#8884d8"}
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 2,
+                overflow: "hidden",
+              }}
+            >
+              {/* Pie Chart */}
+              <Box sx={{ flex: 1, minWidth: 0, height: 250 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      fill="#000"
+                      label={({ name, percent }) =>
+                        `${name}: ${(percent * 100).toFixed(2)}%`
+                      }
+                      labelLine={false}
+                    >
+                      {pieData.map((entry) => (
+                        <Cell
+                          key={`slice-${entry.name}`}
+                          fill={colorMap[entry.name] || "#8884d8"}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value, name) => [
+                        `Score: ${value.toFixed(3)}`,
+                        `Country: ${name}`,
+                      ]}
+                      contentStyle={{
+                        backgroundColor: "#fff",
+                        borderRadius: 6,
+                        borderColor: "#ccc",
+                      }}
                     />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value) => `${(value * 100).toFixed(2)}%`}
-                />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Box>
+
+              {/* Scrollable Legend */}
+              <Box
+                sx={{
+                  flexBasis: 200,
+                  maxHeight: 250,
+                  overflowY: "auto",
+                  px: 1,
+                  "&::-webkit-scrollbar": {
+                    width: 6,
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: theme.palette.grey[400],
+                    borderRadius: 3,
+                  },
+                  fontSize: 14,
+                  userSelect: "none",
+                }}
+              >
                 <Legend
-                  verticalAlign="bottom"
-                  height={36}
-                  wrapperStyle={{ fontSize: 14 }}
+                  layout="vertical"
+                  verticalAlign="top"
+                  align="left"
+                  wrapperStyle={{ paddingLeft: 0, margin: 0 }}
                 />
-              </PieChart>
-            </ResponsiveContainer>
+              </Box>
+            </Box>
           </Box>
         </>
       )}
