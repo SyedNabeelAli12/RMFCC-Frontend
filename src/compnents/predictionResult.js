@@ -12,7 +12,7 @@ export default function PredictionResult({ prediction }) {
         </Typography>
 
         <Typography sx={{ mb: 1 }}>
-          {parseInt(prediction.Probability_No * 100) + "% prediction to go for it."}
+          {parseInt(prediction.Probability_Yes * 100) + "% Piracy Risk"}
         </Typography>
 
         <LinearProgress

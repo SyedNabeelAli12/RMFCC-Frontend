@@ -25,6 +25,7 @@ import {
 } from "recharts";
 import config from "../config";
 import Header from "./headers";
+import { useNavigate } from "react-router-dom";
 
 const FEATURES = [
   { label: "GDP", value: "GDP" },
@@ -35,7 +36,6 @@ const FEATURES = [
   { label: "Piracy Incidents", value: "PIRACYCOUNT" },
 ];
 
-
 export default function ForecastChart({ countries, initialCountry = null }) {
   const [selectedCountry, setSelectedCountry] = useState(initialCountry);
   const [years, setYears] = useState(5);
@@ -43,9 +43,10 @@ export default function ForecastChart({ countries, initialCountry = null }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  const [chartData, setChartData] = useState([]); // <-- store chart data here
+  const [chartData, setChartData] = useState([]); 
+  const navigate = useNavigate();
 
-  const fetchForecast = async () => {
+const fetchForecast = async () => {
     if (!selectedCountry || !selectedCountry.COUNTRY) {
       setError("Please select a country.");
       return;
@@ -55,11 +56,21 @@ export default function ForecastChart({ countries, initialCountry = null }) {
     setError(null);
 
     try {
-      const res = await axios.post(`${config.forecast}`, {
-        country: selectedCountry.COUNTRY,
-        feature,
-        years,
-      });
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        `${config.forecast}`,
+        {
+          country: selectedCountry.COUNTRY,
+          feature,
+          years,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const fullData = res.data?.full_df;
       if (
@@ -96,6 +107,12 @@ export default function ForecastChart({ countries, initialCountry = null }) {
       }
     } catch (err) {
       console.error(err);
+
+      if (err.response && err.response.status === 401) {
+        window.location.href = '/';
+        return;
+      }
+
       setError("Failed to fetch forecast. Please try again.");
       setData(null);
       setChartData([]);
@@ -104,9 +121,10 @@ export default function ForecastChart({ countries, initialCountry = null }) {
     }
   };
 
+
   return (
     <Box sx={{ p: 4, maxWidth: "100%", margin: "auto" }}>
-        <Header content="Forecast Chart" />
+      <Header content="Forecast Chart" />
       <Paper sx={{ p: 3, mb: 4 }}>
         <Box
           component="form"
@@ -156,21 +174,20 @@ export default function ForecastChart({ countries, initialCountry = null }) {
           </FormControl>
 
           <FormControl size="small" sx={{ width: 200 }}>
-  <InputLabel id="feature-select-label">Feature</InputLabel>
-  <Select
-    labelId="feature-select-label"
-    value={feature}
-    label="Feature"
-    onChange={(e) => setFeature(e.target.value)}
-  >
-    {FEATURES.map((feat) => (
-      <MenuItem key={feat.value} value={feat.value}>
-        {feat.label}
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
-
+            <InputLabel id="feature-select-label">Feature</InputLabel>
+            <Select
+              labelId="feature-select-label"
+              value={feature}
+              label="Feature"
+              onChange={(e) => setFeature(e.target.value)}
+            >
+              {FEATURES.map((feat) => (
+                <MenuItem key={feat.value} value={feat.value}>
+                  {feat.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <Button
             variant="contained"

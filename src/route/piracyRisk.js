@@ -18,7 +18,7 @@ import CustomAccordion from "../compnents/accordion";
 import CountryForecastPanel from "./ForecastPredictionPanel";
 import ForecastChart from "./../compnents/forecastChart";
 import axios from "axios";
-import DataProcessingExplanation from './../compnents/calculationDetails';
+import DataProcessingExplanation from "./../compnents/calculationDetails";
 
 const theme = createTheme({
   palette: {
@@ -61,30 +61,50 @@ export default function PiracyRisk() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchTop() {
-      try {
-        const res = await fetch(`${config.topCountries}`);
-        if (!res.ok) throw new Error("Failed to fetch top countries");
-        const data = await res.json();
-        setTopCountries(data.top_countries || []);
-        setTopCountriesError(null);
-      } catch (err) {
-        console.error(err);
-        setTopCountriesError(err.message || "Error loading top countries");
-      } finally {
-        setLoadingTop(false);
-      }
-    }
     fetchTop();
   }, []);
+
+  async function fetchTop() {
+    
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${config.topCountries}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Failed to fetch top countries");
+      const data = await res.json();
+      setTopCountries(data.top_countries || []);
+      setTopCountriesError(null);
+    } catch (err) {
+      console.error(err);
+      if (err.response && err.response.status === 401) {
+        window.location.href = '/';
+        return;
+      }
+      setTopCountriesError(err.message || "Error loading top countries");
+    } finally {
+      setLoadingTop(false);
+    }
+  }
 
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const res = await axios.get(`${config.distinctCountries}`);
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(`${config.distinctCountries}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setCountries(res.data.countries || []);
       } catch (err) {
         console.error("Failed to load countries", err);
+        if (err.response && err.response.status === 401) {
+        window.location.href = '/';
+        return;
+      }
       }
     };
     fetchCountries();
@@ -117,9 +137,10 @@ export default function PiracyRisk() {
     }
 
     try {
-      const res = await fetch(`${config.predict}`, {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${config.predict}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization:`Bearer ${token}` },
         body: JSON.stringify({
           GR: parseFloat(form.GR),
           MILITARY: parseFloat(form.MILITARY),
@@ -133,6 +154,10 @@ export default function PiracyRisk() {
       const data = await res.json();
       setPrediction(data);
     } catch (err) {
+      if (err.response && err.response.status === 401) {
+        window.location.href = '/';
+        return;
+      }
       setError(err.message || "Error during prediction");
     } finally {
       setLoadingPred(false);
@@ -143,12 +168,16 @@ export default function PiracyRisk() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="90%" sx={{ mt: 6, mb: 6 }}>
-
-
+        <CustomAccordion title="Application Information">
+          <DataProcessingExplanation />
+        </CustomAccordion>
         {/* Error message in red if loading top countries fails */}
-       
 
-        <TopCountries loadingTop={loadingTop} topCountries={topCountries} error= {topCountriesError}/>
+        <TopCountries
+          loadingTop={loadingTop}
+          topCountries={topCountries}
+          error={topCountriesError}
+        />
 
         <CustomAccordion title="Show Forecast Panel">
           <CountryForecastPanel countries={countries} />
@@ -157,12 +186,7 @@ export default function PiracyRisk() {
         <CustomAccordion title="Show Forecast Visualization">
           <ForecastChart countries={countries} />
         </CustomAccordion>
-        <CustomAccordion title="Data Processing Explanation">
-           <DataProcessingExplanation/>
-        </CustomAccordion>
 
-
-      
         <Card elevation={5} sx={{ p: 4, borderRadius: 0.5 }}>
           <PiracyRiskForm
             form={form}
@@ -174,8 +198,6 @@ export default function PiracyRisk() {
           {prediction && <KeyIndicators form={form} />}
           {prediction && <PredictionResult prediction={prediction} />}
         </Card>
-
-           
       </Container>
     </ThemeProvider>
   );

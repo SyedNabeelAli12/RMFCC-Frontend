@@ -26,9 +26,11 @@ export default function CountryForecastPanel({ countries }) {
     setLoading(true);
     setError(""); // reset error
     try {
+      const token = localStorage.getItem("token");
       const res = await axios.post(`${config.forecastPredict}`, {
         country: selectedCountry.COUNTRY,
-      });
+   },{headers:{Authorization:`Bearer ${token}`}}
+    );
       if(res.data.error)
       {
          setForecastData(null);
@@ -37,6 +39,10 @@ export default function CountryForecastPanel({ countries }) {
       setForecastData(res.data);
     } catch (err) {
       console.error("Forecast request failed", err);
+      if (err.response && err.response.status === 401) {
+        window.location.href = '/';
+        return;
+      }
       setForecastData(null);
       setError("Failed to fetch forecast data. Please try again.");
     } finally {

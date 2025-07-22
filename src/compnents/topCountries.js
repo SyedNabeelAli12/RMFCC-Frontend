@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import {
   Box,
   Typography,
-  Card,
   CircularProgress,
   Paper,
   useTheme,
@@ -21,7 +20,7 @@ import {
 } from "recharts";
 
 import Header from "./headers";
-import CountryCard from './countryCard';
+import CountryCard from "./countryCard";
 
 const palette = [
   "#FE4A49",
@@ -79,10 +78,8 @@ export default function TopCountries({ loadingTop, topCountries, error }) {
     [topCountries]
   );
 
-  
-
   return (
-    <Paper elevation={4} sx={{ mb: 6, p: 4, borderRadius: 0.5 }}>
+    <Paper elevation={4} sx={{ mb: 6, p: { xs: 2, sm: 3, md: 4 }, borderRadius: 0.5 }}>
       <Header content={"Top Recommended Countries for Expansion"} />
       {loadingTop ? (
         <Box display="flex" justifyContent="center" mt={2}>
@@ -98,23 +95,27 @@ export default function TopCountries({ loadingTop, topCountries, error }) {
           <Box
             sx={{
               display: "flex",
-              flexDirection: {
-                md: "row",
-                sm: "column",
-                xs: "column",
-                xl: "row",
+              flexDirection: "column", // mobile first stacked
+              gap: 2,
+              '@media (min-width:900px)': {
+                flexDirection: "row",
+                gap: 4,
               },
             }}
           >
             {/* Bar Chart */}
             <Box
               sx={{
-                height: 300,
-                width: "50%",
+                width: "100%",
+                height: 250,
                 backgroundColor: "#f0f0f0",
                 p: 1,
                 borderRadius: 0.5,
                 boxShadow: theme.shadows[1],
+                '@media (min-width:900px)': {
+                  width: "50%",
+                  height: 300,
+                },
               }}
             >
               <ResponsiveContainer width="100%" height="100%">
@@ -142,42 +143,45 @@ export default function TopCountries({ loadingTop, topCountries, error }) {
               display="grid"
               gap={1}
               sx={{
-                p: 1,
-                width: "50%",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                width: "100%",
+                gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+                '@media (min-width:900px)': {
+                  width: "50%",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                },
               }}
             >
-
-{topCountries.map(({ COUNTRY, COUNTRYNAME, Final_Score }, i) => (
-  <CountryCard
-    key={COUNTRY}
-    country={COUNTRY}
-    countryName={COUNTRYNAME}
-    score={Final_Score}
-    rank={i}
-    color={colorMap[COUNTRY]}
-  />
-))}
-
-
-
+              {topCountries.map(({ COUNTRY, COUNTRYNAME, Final_Score }, i) => (
+                <CountryCard
+                  key={COUNTRY}
+                  country={COUNTRY}
+                  countryName={COUNTRYNAME}
+                  score={Final_Score}
+                  rank={i}
+                  color={colorMap[COUNTRY]}
+                />
+              ))}
             </Box>
           </Box>
 
           {/* PIE CHART */}
+            <Header content={"Top Countries Pie Chart View"} />
           <Box
             sx={{
-              height: "50vh",
+              height: "auto",
               minHeight: 320,
               mt: 4,
-              px: 2,
+              px: { xs: 1, sm: 2 },
               boxSizing: "border-box",
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
+              '@media (min-width:600px)': {
+                flexDirection: "row",
+                gap: 2,
+              },
             }}
           >
-            <Header content={"Top Countries Pie Chart View"} />
 
             {/* Highest & Lowest Labels */}
             <Box
@@ -190,11 +194,11 @@ export default function TopCountries({ loadingTop, topCountries, error }) {
                 gap: 1,
               }}
             >
-              <Typography variant="body2" color="text.secondary" noWrap>
+              <Typography variant="caption" color="text.secondary" noWrap>
                 <strong>Highest:</strong> {highest?.COUNTRY} (
                 {highest?.Final_Score.toFixed(3)})
               </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
+              <Typography variant="caption" color="text.secondary" noWrap>
                 <strong>Lowest:</strong> {lowest?.COUNTRY} (
                 {lowest?.Final_Score.toFixed(3)})
               </Typography>
@@ -212,7 +216,14 @@ export default function TopCountries({ loadingTop, topCountries, error }) {
               }}
             >
               {/* Pie Chart */}
-              <Box sx={{ flex: 1, minWidth: 0, height: 250 }}>
+              <Box
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  height: 250,
+                  mb: { xs: 2, sm: 0 },
+                }}
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -257,6 +268,8 @@ export default function TopCountries({ loadingTop, topCountries, error }) {
                   maxHeight: 250,
                   overflowY: "auto",
                   px: 1,
+                  fontSize: 14,
+                  userSelect: "none",
                   "&::-webkit-scrollbar": {
                     width: 6,
                   },
@@ -264,8 +277,6 @@ export default function TopCountries({ loadingTop, topCountries, error }) {
                     backgroundColor: theme.palette.grey[400],
                     borderRadius: 3,
                   },
-                  fontSize: 14,
-                  userSelect: "none",
                 }}
               >
                 <Legend
